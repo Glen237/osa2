@@ -1,18 +1,32 @@
 import React from "react";
 import PhoneInput from "./components/PhoneInput";
-
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      persons: [{ name: "Arto Hellas", phone: "123-304" }],
+      persons: [{ name: "Arto Hellas", number: "123-304" }],
       newName: "",
       newPhoneNumber: "",
     };
   }
 componentDidMount(){
-  fetch('./db.JSON').then(res=>res.json()).then(data=>console.log(data))
-}
+  
+  fetch(' http://localhost:3002/persons',{
+    headers : { 
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+     }
+
+  })
+  .then(response => response.json())
+  .then((data) =>{
+    console.log(data)
+    this.setState({persons:data})
+  })}
+ 
+ 
+
+
   render() {
 
     
@@ -35,10 +49,10 @@ componentDidMount(){
       if (nameExists === true) {
         alert("name already exists");
       } else {
-        this.state.persons = [
+        this.setState({persons:[
           ...this.state.persons,
-          { name: this.state.newName, phone: this.state.newPhoneNumber },
-        ];
+          { name: this.state.newName, number: this.state.newPhoneNumber },
+        ]})
       }
 
       this.setState({ newName: "" });
@@ -60,7 +74,7 @@ componentDidMount(){
         <ul>
           {this.state.persons.map((person) => {
             return (
-              <li key={person.name}>{person.name + " " + person.phone}</li>
+              <li key={person.name}>{person.name + " " + person.number}</li>
             );
           })}
         </ul>
