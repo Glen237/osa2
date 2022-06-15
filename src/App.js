@@ -1,63 +1,57 @@
-import React from "react";
+import axios from "axios";
+import React ,{useEffect,useState}from "react";
 import PhoneInput from "./components/PhoneInput";
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      persons: [{ name: "Arto Hellas", number: "123-304" }],
-      newName: "",
-      newPhoneNumber: "",
-    };
-  }
-componentDidMount(){
+const App=()=>{
+  const [persons, setPersons] = useState([])
+  const [name,setName] = useState('')
+  const [number,setNumber] = useState('')
+  useEffect(() => {
+  fetch(' http://localhost:5000/api/persons').then(res=>res.json().then(data=>{
+    setPersons(data.persons)
+  }))
+  }, [])
   
-  fetch(' http://localhost:3002/persons',{
-    headers : { 
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-     }
-
-  })
-  .then(response => response.json())
-  .then((data) =>{
-    console.log(data)
-    this.setState({persons:data})
-  })}
  
- 
+  const handleNameChange = (event) => {
+    setName(event.target.value);
+  };
+  const handlePhoneNumberChange = (event) => {
+    setNumber( event.target.value );
+  };
+  const handleSubmit = async(event) => {
+    event.preventDefault();
 
+    let nameExists = false;
 
-  render() {
-
-    
-    const handleNameChange = (event) => {
-      this.setState({ newName: event.target.value });
-    };
-    const handlePhoneNumberChange = (event) => {
-      this.setState({ newPhoneNumber: event.target.value });
-    };
-    const handleSubmit = (event) => {
-      event.preventDefault();
-
-      let nameExists = false;
-
-      for (let i = 0; i < this.state.persons.length; i++) {
-        if (this.state.persons[i].name === this.state.newName) {
-          nameExists = true;
-        }
+    for (let i = 0; i < persons.length; i++) {
+      if (persons[i].name === name) {
+        nameExists = true;
       }
-      if (nameExists === true) {
-        alert("name already exists");
-      } else {
-        this.setState({persons:[
-          ...this.state.persons,
-          { name: this.state.newName, number: this.state.newPhoneNumber },
-        ]})
-      }
+    }
+    if (nameExists === true) {
+      alert("name already exists");
+      return;
+    } else {
+      setPersons([
+        ...persons,
+        { name, number }]
+    )
+    }
+    try {
+      const res= await axios.post('http://localhost:5000/api/persons',JSON.stringify({name:name,number:number}),{
+   headers:{
+     'content-type':'application/json'
+   }
+ })
+ console.log(res)
 
-      this.setState({ newName: "" });
-      this.setState({ newPhoneNumber: "" });
-    };
+    } catch (error) {
+      console.log(error)
+    }
+    setName("");
+    setNumber("");
+   
+  }
 
     return (
       <div>
@@ -65,14 +59,14 @@ componentDidMount(){
 
         <h2>Numerot</h2>
         <PhoneInput
-          name={this.state.newName}
-          phone={this.state.newPhoneNumber}
+          name={name}
+          phone={number}
           handleNameChange={handleNameChange}
           handlePhoneNumberChange={handlePhoneNumberChange}
           handleSubmit={handleSubmit}
         />
         <ul>
-          {this.state.persons.map((person) => {
+          {persons && persons.map((person) => {
             return (
               <li key={person.name}>{person.name + " " + person.number}</li>
             );
@@ -81,6 +75,6 @@ componentDidMount(){
       </div>
     );
   }
-}
+
 
 export default App;
